@@ -1,5 +1,19 @@
 ##Ising Model Animation and Analysis
 
-A quick implamentation of a classic, and simple, description of ferromagnetism from thermodynamics
+A quick implamentation of a classic, and simple, representation
+of ferromagnetism from thermodynamics
 
-To use simply import with `import ising` then see docs/Ising.ipynb for demonstration.
+##Installation
+
+This module can be installed using antipackage
+((documentation)[https://github.com/ellisonbg/antipackage])
+with the following commands:
+
+```
+import antipackage
+from github.rmorshea.ising import ising
+```
+
+##Usage
+
+See docs/Ising.ipynb for examples.
