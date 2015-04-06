@@ -5,9 +5,9 @@ of ferromagnetism from thermodynamics
 
 ##Installation
 
-This module can be installed using antipackage
-((documentation)[https://github.com/ellisonbg/antipackage])
-with the following commands:
+This module can be installed with
+[antipackage](https://github.com/ellisonbg/antipackage)
+using the following commands:
 
 ```
 import antipackage
