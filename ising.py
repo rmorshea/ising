@@ -29,7 +29,6 @@ def make_png(array, size, fname):
 
 def Es2Cv(T,U,U2):
     """Convert potential energies to heat capacity
-
     Parameters
     ----------
     T : list
@@ -47,7 +46,6 @@ class Lattice(BlockGrid):
 
     def __init__(self, y, x, dist, T=2.5, nghbrs=4, size=10):
         """Create a lattice of spin up and down electrons
-
         Parameters
         ----------
         y : int
@@ -103,7 +101,6 @@ class Lattice(BlockGrid):
 
     def iterate(self, iterations, index=None):
         """Iterate through random flips at a particular temperature
-
         Parameters
         ----------
         iterations : int
@@ -156,7 +153,6 @@ class Lattice(BlockGrid):
 
     def animate(self, iterations, frames=None, display=False, stop=0.2):
         """animate the model
-
         Parameters
         ----------
         iterations : int
@@ -183,7 +179,6 @@ class Lattice(BlockGrid):
 
     def make_pngs(self, size=(500,500), directory='frames', fnames='nbim'):
         """create a set of png's using the states generated during animation
-
         Parameters
         ----------
         size : tuple
@@ -192,7 +187,6 @@ class Lattice(BlockGrid):
             the name of the directory the images should be stored in
         fnames : str
             the base name of the png image files
-
         Notes
         -----
         directory must already exist in order to save the images
@@ -209,7 +203,6 @@ class Lattice(BlockGrid):
 
     def make_gif(self, fname, duration=0.1, size=(500,500)):
         """create a gif of up to 160 frames using images from a directory
-
         Parameters
         ----------
         fname : str
@@ -290,7 +283,8 @@ class Unit(Block):
         """return the total spin of neighboring units in the lattice"""
         total = 0
         for u in self.get_neighbors():
-            total += u.spin
+            dist = np.sqrt((self.row-u.row)**2+(self.col-u.col)**2)
+            total += float(u.spin)/dist
         return total
 
     def flip(self):
