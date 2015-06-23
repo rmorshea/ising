@@ -14,6 +14,8 @@ import antipackage
 from github.rmorshea.ising import ising
 ```
 
+**Dependancies:** [IPython](http://ipython.org/), [PIL](http://www.pythonware.com/products/pil/), [images2gif](https://pypi.python.org/pypi/images2gif)
+
 ## Usage
 
 + **Animated GIFs:**
