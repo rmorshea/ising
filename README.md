@@ -1,9 +1,11 @@
 ## Ising Model Animation and Analysis
 
-A quick implamentation of a classic, and simple, representation
-of ferromagnetism from thermodynamics
+A quick implementation of a classic, and simple, representation
+of ferromagnetism from thermodynamics in both Python and Mathematica.
+All documentation for Mathematica version of the model is given in the notebook
+itself. What's below pertains only to the Python version.
 
-## Installation
+### Installation
 
 This module can be installed with
 [antipackage](https://github.com/ellisonbg/antipackage)
@@ -16,7 +18,7 @@ from github.rmorshea.ising import ising
 
 **Dependancies:** [IPython](http://ipython.org/), [PIL](http://www.pythonware.com/products/pil/), [images2gif](https://pypi.python.org/pypi/images2gif)
 
-## Usage
+### Usage
 
 + **Animated GIFs:**
 
@@ -56,9 +58,9 @@ from github.rmorshea.ising import ising
 	```
 	
 	Finally the last step is to create your GIF with `lat.make_gif()`:
-
+	
 	<img width=200 height=200 src="https://raw.githubusercontent.com/rmorshea/ising/master/docs/Teq1.5.GIF">
-
+	
 + **Model Analysis:**
 
 	Standard information about the model is given by the output of `lat.analyze()`. This returns the average magnitization, avg energy, and heat capacity at each frame of animation. Alternatively, `lat.get_potentials` returns the average energy and squared average anergy at each frame.
