@@ -1,0 +1,733 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     31267,        724]
+NotebookOptionsPosition[     30063,        682]
+NotebookOutlinePosition[     30489,        699]
+CellTagsIndexPosition[     30446,        696]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["The Ising Model", "Title",
+ CellChangeTimes->{3.642558581664136*^9}],
+
+Cell[CellGroupData[{
+
+Cell["Summary/Description", "Subchapter",
+ CellChangeTimes->{{3.642558587161613*^9, 3.642558619812579*^9}}],
+
+Cell[TextData[{
+ "The Ising Model, named after the physicist Ernst Ising, is a mathematical \
+model of ferromagnetism in statistical mechanics. The model consists of \
+discrete variables that represent magnetic dipole moments of atomic spins \
+that can be in one of two states (+1 or \[Minus]1). The spins are arranged in \
+a lattice, allowing each spin to interact with its neighbors. The model \
+allows the identification of phase transitions, as a simplified model of \
+reality. The two-dimensional square-lattice Ising model is one of the \
+simplest statistical models to show a phase transition. Read more at: \
+http://www.math.ubc.ca/~marcus/Math601D_2015/cipra_ising.pdf\n\nThe Goal of \
+this project was to make an animation of The 2D Ising Model using ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ "\[CloseCurlyQuote]s `Manipulate` function in order to allow a user to see \
+the results of the system under different conditions. Here spins are \
+represented by black and white pixes which evolve over time depending on the \
+temperature and the number of interacting neighbors. Traditionally this model \
+is done using the four nearest neigbors, however I\[CloseCurlyQuote]ve \
+included the option to have the nearest eight involved during each \
+interaction. In this model the phase transition (or critical point) for the \
+system occurs at 2.5K; anything below this temperature and the system will \
+converge and anything above and the system will be overcome by thermal noise.\
+\n\nIf I have more time this project could be extended beyond the animation \
+itself and into the analysis phase so that you could get plots of the systems \
+magnitization and potential at functions of temperature alongside the \
+animation. However this would require a fair bit more work. Additionally the \
+amount of time required to get good plots for large grids is quite large so \
+it may have been cumbersome as well."
+}], "Text",
+ CellChangeTimes->{{3.64255847834643*^9, 3.642558507991179*^9}, {
+  3.642558594837871*^9, 3.6425587291614523`*^9}, {3.642558777262043*^9, 
+  3.642558858158925*^9}, {3.64255889554144*^9, 3.642559018618793*^9}, {
+  3.64256077960446*^9, 3.642560924461451*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["The Code", "Subchapter",
+ CellChangeTimes->{{3.6425587333776484`*^9, 3.642558742578143*^9}}],
+
+Cell["\<\
+Collectively the functions gather the spin values surrounding a cell at the \
+given index. The sum of these values is used to calculate the local potential \
+at that point which will ultimately determine whether the spin of that cell \
+will be flipped or not.\
+\>", "Text",
+ CellChangeTimes->{{3.642556873359837*^9, 3.642556955126835*^9}, 
+   3.642558261271946*^9}],
+
+Cell["\<\
+RawNeighbors : gives a list of indexes corrispoding the locations of the \
+neighboring cells
+LimCheck : handles indexes which go beyond the limits of the grid - the grid \
+wraps.
+NeighborSpins : gathers the spin values of the neighboring cells into a list.\
+\
+\>", "Text",
+ CellChangeTimes->{3.642560373659547*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"RawNeighbors", "[", 
+    RowBox[{"j_", ",", "i_", ",", "nghbrs_"}], "]"}], ":=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"j", ",", "i"}], "}"}], "+", "#"}], ")"}], "&"}], "/@", 
+    RowBox[{"Table", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"IntegerPart", "[", 
+         RowBox[{"Cos", "[", 
+          RowBox[{"2", "*", "n", "*", 
+           RowBox[{"Pi", "/", "nghbrs"}]}], "]"}], "]"}], ",", 
+        RowBox[{"IntegerPart", "[", 
+         RowBox[{"Sin", "[", 
+          RowBox[{"2", "*", "n", "*", 
+           RowBox[{"Pi", "/", "nghbrs"}]}], "]"}], "]"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"n", ",", "0", ",", 
+        RowBox[{"(", 
+         RowBox[{"nghbrs", "-", "1"}], ")"}]}], "}"}]}], "]"}]}]}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"LimCheck", "[", 
+    RowBox[{"indexes_", ",", "limits_"}], "]"}], ":=", "\[IndentingNewLine]", 
+   
+   RowBox[{
+    RowBox[{
+     RowBox[{"Which", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"#", "\[Equal]", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "0"}], "}"}]}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"-", "1"}], ",", 
+         RowBox[{"-", "1"}]}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"#", "\[Equal]", "limits"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"1", ",", "1"}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"#", "[", 
+         RowBox[{"[", "1", "]"}], "]"}], "\[Equal]", 
+        RowBox[{"limits", "[", 
+         RowBox[{"[", "1", "]"}], "]"}]}], ",", 
+       RowBox[{"{", 
+        RowBox[{"1", ",", 
+         RowBox[{"#", "[", 
+          RowBox[{"[", "2", "]"}], "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"#", "[", 
+         RowBox[{"[", "2", "]"}], "]"}], "\[Equal]", 
+        RowBox[{"limits", "[", 
+         RowBox[{"[", "2", "]"}], "]"}]}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], ",", "1"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"#", "[", 
+         RowBox[{"[", "1", "]"}], "]"}], "\[Equal]", "0"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"-", "1"}], ",", 
+         RowBox[{"#", "[", 
+          RowBox[{"[", "2", "]"}], "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"#", "[", 
+         RowBox[{"[", "2", "]"}], "]"}], "\[Equal]", "0"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], ",", 
+         RowBox[{"-", "1"}]}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"#", "\[Equal]", "#"}], ",", "#"}], "]"}], "&"}], "/@", 
+    "indexes"}]}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"NeighborSpins", "[", 
+   RowBox[{"table_", ",", "nghbrs_", ",", "j_", ",", "i_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"dims", "=", 
+      RowBox[{"Dimensions", "[", "table", "]"}]}], "}"}], ",", 
+    RowBox[{"Return", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{
+        RowBox[{"table", "[", 
+         RowBox[{"[", 
+          RowBox[{"#", "[", 
+           RowBox[{"[", "1", "]"}], "]"}], "]"}], "]"}], "[", 
+        RowBox[{"[", 
+         RowBox[{"#", "[", 
+          RowBox[{"[", "2", "]"}], "]"}], "]"}], "]"}], "&"}], "/@", 
+      RowBox[{"LimCheck", "[", 
+       RowBox[{
+        RowBox[{"RawNeighbors", "[", 
+         RowBox[{"j", ",", "i", ",", "nghbrs"}], "]"}], ",", 
+        RowBox[{"dims", "+", 
+         RowBox[{"{", 
+          RowBox[{"1", ",", "1"}], "}"}]}]}], "]"}]}], "]"}]}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->{{3.642556868949369*^9, 3.642556870038827*^9}, {
+   3.642559174612691*^9, 3.64255922857132*^9}, {3.6425595874195557`*^9, 
+   3.642559599846396*^9}, 3.642559636517187*^9, {3.642559864549708*^9, 
+   3.642559867032612*^9}, {3.642559938730588*^9, 3.642559938982546*^9}, {
+   3.6425601189336853`*^9, 3.6425601471629353`*^9}, 3.6425601799272623`*^9}],
+
+Cell["\<\
+The functions below are responsible for flipping spins based on the \
+surrounding local potentials generated by the spins of neighboring cells. The \
+general principle is that if the selected cell is spin of, but the majority \
+of its neighbors are spin down, chances are that cell will be made spin down. \
+However with higher temperatures the surrounding potentials will be drowned \
+out by thermal noise. So whether or not this flip actually occurs is governed \
+by Boltzman Statistics which are dependant on the overall potential \
+surrounding the cell, and the amount of thermal photons.\
+\>", "Text",
+ CellChangeTimes->{{3.642557160083069*^9, 3.64255727098321*^9}, {
+  3.6425574535743923`*^9, 3.642557486713951*^9}, {3.642557537439987*^9, 
+  3.642557606230541*^9}}],
+
+Cell["\<\
+RandomIndex : generates a random location within the demensions of the grid
+Potential : calculates the potential based on temperature and neighboring spins
+Flip : simply flips the value at the given index
+FlipRandom : flips a random cell based on the value of of the surrounding \
+potential\
+\>", "Text",
+ CellChangeTimes->{{3.642557493617721*^9, 3.642557531720846*^9}, {
+   3.642557608126794*^9, 3.6425576882849817`*^9}, 3.642559801393598*^9, 
+   3.642560331879277*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"RandomIndex", "[", "dims_", "]"}], ":=", 
+   RowBox[{"Return", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"RandomInteger", "[", 
+       RowBox[{"{", 
+        RowBox[{"1", ",", 
+         RowBox[{"dims", "[", 
+          RowBox[{"[", "1", "]"}], "]"}]}], "}"}], "]"}], ",", 
+      RowBox[{"RandomInteger", "[", 
+       RowBox[{"{", 
+        RowBox[{"1", ",", 
+         RowBox[{"dims", "[", 
+          RowBox[{"[", "2", "]"}], "]"}]}], "}"}], "]"}]}], "}"}], "]"}]}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Potential", "[", 
+    RowBox[{"table_", ",", "j_", ",", "i_", ",", "n_"}], "]"}], ":=", 
+   RowBox[{"Return", "[", 
+    RowBox[{"2", "*", 
+     RowBox[{"table", "[", 
+      RowBox[{"[", 
+       RowBox[{"j", ",", "i"}], "]"}], "]"}], "*", 
+     RowBox[{"Total", "[", 
+      RowBox[{"NeighborSpins", "[", 
+       RowBox[{"table", ",", "n", ",", "j", ",", "i"}], "]"}], "]"}]}], 
+    "]"}]}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Flip", "[", 
+    RowBox[{"table_", ",", "j_", ",", "i_"}], "]"}], ":=", 
+   RowBox[{"Return", "[", 
+    RowBox[{"MapAt", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"-", "1"}], "*", "#"}], ")"}], "&"}], ",", "table", ",", 
+      RowBox[{"{", 
+       RowBox[{"{", 
+        RowBox[{"j", ",", "i"}], "}"}], "}"}]}], "]"}], "]"}]}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"FlipRandom", "[", 
+   RowBox[{"table_", ",", "temp_", ",", "nghbrs_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"inds", "=", 
+       RowBox[{"RandomIndex", "[", 
+        RowBox[{"Dimensions", "[", "table", "]"}], "]"}]}], ",", 
+      RowBox[{"r", "=", 
+       RowBox[{"RandomReal", "[", "]"}]}]}], "}"}], ",", 
+    RowBox[{"If", "[", 
+     RowBox[{
+      RowBox[{"r", "<", 
+       RowBox[{"Exp", "[", 
+        RowBox[{
+         RowBox[{"-", 
+          RowBox[{"Potential", "[", 
+           RowBox[{"table", ",", 
+            RowBox[{"inds", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], ",", 
+            RowBox[{"inds", "[", 
+             RowBox[{"[", "2", "]"}], "]"}], ",", "nghbrs"}], "]"}]}], "/", 
+         "temp"}], "]"}]}], ",", "\[IndentingNewLine]", 
+      RowBox[{"Return", "[", 
+       RowBox[{"Flip", "[", 
+        RowBox[{"table", ",", 
+         RowBox[{"inds", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], ",", 
+         RowBox[{"inds", "[", 
+          RowBox[{"[", "2", "]"}], "]"}]}], "]"}], "]"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Return", "[", "table", "]"}]}], "]"}]}], "]"}]}]}], "Input",
+ CellChangeTimes->{{3.642557150121046*^9, 3.642557156423917*^9}}],
+
+Cell["\<\
+The bulk of the similation has been covered, and all that\[CloseCurlyQuote]s \
+left is to evolve the system over time. Main aspect of this is that \
+`FlipRandom` needs to be run a certain number of times per frame so the \
+memory doesn\[CloseCurlyQuote]t get overloaded with thousands of frames which \
+only contain a single change. Thus each frame represents the state of the \
+system after some number of iterations (or times steps).
+
+Iterate : evolves the system forward some number of time steps (recursively \
+defined to save each state)
+MakeFrames : runs `Iterate` some number of times storing the system state \
+each time\
+\>", "Text",
+ CellChangeTimes->{{3.642557696011462*^9, 3.642557883231226*^9}, {
+  3.6425579285817633`*^9, 3.6425579524455013`*^9}, {3.642560426094008*^9, 
+  3.6425604531956997`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"Iterate", "[", 
+    RowBox[{"table_", ",", "temp_", ",", "nghbrs_", ",", "i_", ",", 
+     RowBox[{"ii_:", "0"}]}], "]"}], ":=", 
+   RowBox[{"If", "[", 
+    RowBox[{
+     RowBox[{"ii", "<", "i"}], ",", 
+     RowBox[{"Return", "[", 
+      RowBox[{"FlipRandom", "[", 
+       RowBox[{
+        RowBox[{"Iterate", "[", 
+         RowBox[{"table", ",", "temp", ",", "nghbrs", ",", "i", ",", 
+          RowBox[{"ii", "+", "1"}]}], "]"}], ",", "temp", ",", "nghbrs"}], 
+       "]"}], "]"}], ",", 
+     RowBox[{"Return", "[", "table", "]"}]}], "]"}]}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"MakeFrames", "[", 
+   RowBox[{"init_", ",", "temp_", ",", "nghbrs_", ",", "f_", ",", "i_"}], 
+   "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"frames", "=", 
+      RowBox[{"{", "init", "}"}]}], "}"}], ",", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"For", "[", 
+       RowBox[{
+        RowBox[{"n", "=", "0"}], ",", 
+        RowBox[{"n", "<", "f"}], ",", 
+        RowBox[{"n", "++"}], ",", 
+        RowBox[{
+         RowBox[{"frames", " ", "=", 
+          RowBox[{"Append", "[", 
+           RowBox[{"frames", ",", 
+            RowBox[{"Iterate", "[", 
+             RowBox[{
+              RowBox[{"frames", "[", 
+               RowBox[{"[", 
+                RowBox[{"-", "1"}], "]"}], "]"}], ",", "temp", ",", "nghbrs", 
+              ",", "i"}], "]"}]}], "]"}]}], ";"}]}], "]"}], ";", 
+      RowBox[{"Return", "[", "frames", "]"}]}], ")"}]}], "]"}]}]}], "Input",
+ CellChangeTimes->{{3.642535922440773*^9, 3.6425359456869907`*^9}, {
+   3.642536207415574*^9, 3.6425362359506683`*^9}, {3.6425362704639053`*^9, 
+   3.64253629615762*^9}, {3.642536428852263*^9, 3.6425364347580233`*^9}, 
+   3.6425368743710527`*^9, {3.6425369155124893`*^9, 3.6425369272910843`*^9}, {
+   3.64253713878893*^9, 3.642537139664229*^9}, {3.642537346725752*^9, 
+   3.642537398849092*^9}, {3.642537443449788*^9, 3.64253749786372*^9}, {
+   3.6425375290706873`*^9, 3.642537544536811*^9}, {3.6425375858619347`*^9, 
+   3.6425376933154993`*^9}, {3.6425377251087637`*^9, 3.642537811020015*^9}, {
+   3.6425379072272053`*^9, 3.642538163008421*^9}, {3.642538196582796*^9, 
+   3.6425382237847557`*^9}, {3.642538286097836*^9, 3.642538288052026*^9}, {
+   3.642538385072403*^9, 3.642538425107411*^9}, {3.642538529063054*^9, 
+   3.642538640124852*^9}, {3.6425386887006407`*^9, 3.642538688851659*^9}, {
+   3.642538719970139*^9, 3.6425387759033117`*^9}, {3.642538885392314*^9, 
+   3.642538915535842*^9}, {3.6425389634821157`*^9, 3.64253904101752*^9}, {
+   3.642539092858593*^9, 3.642539189371517*^9}, {3.642539231437141*^9, 
+   3.6425392867968817`*^9}, {3.642539507647049*^9, 3.6425396585948877`*^9}, 
+   3.642539730129897*^9, {3.642539769496025*^9, 3.64253979980837*^9}, {
+   3.642539928197562*^9, 3.642539931516665*^9}, {3.6425399832881536`*^9, 
+   3.642539992812648*^9}, {3.642540036042334*^9, 3.642540047682633*^9}, {
+   3.642540096359309*^9, 3.642540097358111*^9}, {3.642540130126787*^9, 
+   3.642540149617474*^9}, {3.642540182234166*^9, 3.642540191052878*^9}, {
+   3.642540262451434*^9, 3.642540314773921*^9}, {3.6425403541446247`*^9, 
+   3.642540369761346*^9}, {3.642540435238841*^9, 3.642540437043345*^9}, {
+   3.642540494591723*^9, 3.642540500113984*^9}, {3.642540537173594*^9, 
+   3.6425407197428493`*^9}, {3.642540873988982*^9, 3.6425408864676647`*^9}, {
+   3.642540961761085*^9, 3.642541065607257*^9}, 3.642541110960835*^9, {
+   3.642541167976996*^9, 3.6425411801181097`*^9}, {3.6425412719439707`*^9, 
+   3.6425413126645737`*^9}, {3.642541460437051*^9, 3.6425415132436523`*^9}, {
+   3.642541570024754*^9, 3.6425415734852543`*^9}, {3.642541652273061*^9, 
+   3.64254175284552*^9}, {3.642541809353907*^9, 3.6425418296592493`*^9}, {
+   3.642541919954548*^9, 3.64254197539148*^9}, {3.642542051298867*^9, 
+   3.642542080316847*^9}, {3.6425421334551086`*^9, 3.642542135263815*^9}, {
+   3.642542274153928*^9, 3.6425422785476847`*^9}, {3.642542441868128*^9, 
+   3.642542469914567*^9}, {3.642542810630411*^9, 3.642542847879922*^9}, {
+   3.642542901026244*^9, 3.6425429318597593`*^9}, {3.642543849300581*^9, 
+   3.642543888596922*^9}, {3.6425439770158987`*^9, 3.6425439966887627`*^9}, {
+   3.642544123431795*^9, 3.6425443202771482`*^9}, {3.642544351141222*^9, 
+   3.642544390973322*^9}, {3.642544584127657*^9, 3.642544593542474*^9}, {
+   3.642544637194862*^9, 3.6425446512457027`*^9}, {3.6425447403617067`*^9, 
+   3.642544753770836*^9}, {3.642548039883913*^9, 3.6425485632118273`*^9}, {
+   3.6425486284127197`*^9, 3.64254894251585*^9}, {3.642549032203951*^9, 
+   3.642549046875806*^9}, {3.642549101458973*^9, 3.642549110024041*^9}, {
+   3.642549777261129*^9, 3.6425497886227922`*^9}, {3.642549820786454*^9, 
+   3.6425498376319113`*^9}, {3.642550383855135*^9, 3.642550388791099*^9}, {
+   3.642550973951923*^9, 3.6425510037399597`*^9}, {3.6425517394285507`*^9, 
+   3.6425517404604483`*^9}, {3.642552064292897*^9, 3.642552207003298*^9}, {
+   3.642552279080789*^9, 3.64255228128164*^9}, {3.642555837429727*^9, 
+   3.642555839645668*^9}, {3.642556864098826*^9, 3.6425568654394712`*^9}, {
+   3.642557129525443*^9, 3.642557131056898*^9}}],
+
+Cell["\<\
+The function responsible for handling `Manipulate`, and creating the display.\
+\
+\>", "Text",
+ CellChangeTimes->{{3.642555967366695*^9, 3.642556106900147*^9}, {
+  3.6425561590183077`*^9, 3.642556452604702*^9}, {3.642556842109282*^9, 
+  3.6425568483846416`*^9}, {3.6425580225396214`*^9, 3.6425580259139347`*^9}}],
+
+Cell["\<\
+Simulate : runs the simluation for all time steps based on initial \
+conditions. once that' s
+been calculated a second manipulate allows you to animate the system over time\
+\>", "Text",
+ CellChangeTimes->{{3.642558028228223*^9, 3.642558146188746*^9}, 
+   3.642560497050908*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Simulate", "[", "initial_", "]"}], ":=", "\[IndentingNewLine]", 
+  RowBox[{"Manipulate", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"With", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"Frames", "=", 
+        RowBox[{"MakeFrames", "[", 
+         RowBox[{"initial", ",", "t", ",", "n", ",", "f", ",", "i"}], "]"}]}],
+        "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"Manipulate", "[", 
+       RowBox[{
+        RowBox[{"ArrayPlot", "[", 
+         RowBox[{
+          RowBox[{"Frames", "[", 
+           RowBox[{"[", "i", "]"}], "]"}], ",", 
+          RowBox[{"ColorRules", " ", "->", " ", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"1", " ", "->", " ", "White"}], ",", 
+             RowBox[{
+              RowBox[{"-", "1"}], " ", "->", " ", "Black"}]}], "}"}]}]}], 
+         "]"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"i", ",", "1", ",", "\"\<Time\>\""}], "}"}], ",", "1", ",",
+           "f", ",", "1", ",", 
+          RowBox[{"AnimationRate", "\[Rule]", "10"}], ",", 
+          RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}]}], 
+       "]"}]}], "]"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"t", ",", "2.5", ",", "\"\<Temp (2.5 = Equilibrium)\>\""}], 
+       "}"}], ",", "0.01", ",", "5", ",", "0.01", ",", 
+      RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"n", ",", "4", ",", "\"\<Number of Neighbors\>\""}], "}"}], 
+      ",", "4", ",", "8", ",", "4", ",", 
+      RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"f", ",", "200", ",", "\"\<Number of Frames\>\""}], "}"}], ",",
+       "1", ",", "400", ",", "5", ",", 
+      RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"i", ",", "75", ",", "\"\<Iterations per Frame\>\""}], "}"}], 
+      ",", "1", ",", "500", ",", "5", ",", 
+      RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}]}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->CompressedData["
+1:eJwdzFkowwEAx/G1B5l7iKJkIzPWmsZKWysbUkhoElkZG6UmK7nWalG2XLle
+iF1eFpIzpBQ1ZyzHKDQ5spKIzPFg/r//w7fP25ehaCxRUikUCoMInjiTfBMJ
+z1kjH1TaJGF9pyEYVphGEyCfH8GGa3/sDLhxyM+E2aLHYlgpdVZB0bJfDbz7
+mK6Dzp+WJtibF9QK2/UvBrjMHx6DC+sX4+TH47PBgvPxKShR9dlheuzqLDyM
+Vm9B8XYbKXMldweeOYKPYD9T6IJh3d+30CWTeWD10uwblIfwqCZCFdVOgw9C
+diT0p2ui4HGXNgaK0zri4Lt6LhEyNW4W/E5ZT4WG/S4uZORvCqC2lCeEgi+v
+GA68cXPhDGu3FFpTm+VQd5ujgn+Bqjo4L3HroGQxWQ9/txxGePm60AOFiqsh
+KLtxjcIyy6kZcihSG+SVC6ah/FpEamQV3sNapfgBfjZ7w82EpidOBEwaVO9Z
+COOLnKQpkw0BVsKliWFSxcFZGNRpQ+nwH0zHABc=
+  "]],
+
+Cell["\<\
+Function for initializing the grid with random spins of either +1 or -1 \
+indicated by black and white cells.\
+\>", "Text",
+ CellChangeTimes->{{3.642555882993132*^9, 3.642555904665229*^9}, {
+  3.64255611449119*^9, 3.642556155666601*^9}, {3.6425566293663063`*^9, 
+  3.6425566373033648`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TableInit", "[", 
+   RowBox[{"h_", ",", " ", "w_"}], "]"}], " ", ":=", " ", 
+  RowBox[{"Return", "[", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"RandomChoice", "[", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"-", "1"}], ",", " ", "1"}], "}"}], "]"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", " ", "w"}], "}"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"j", ",", " ", "h"}], "}"}]}], "]"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.642560502216133*^9, 3.642560511083877*^9}}],
+
+Cell[TextData[{
+ "Run the simulation. Simply enter the grid size you\[CloseCurlyQuote]d like \
+to use into the grid initializer.\n\nOPTIONS\n+ ",
+ StyleBox["Temp",
+  FontWeight->"Bold"],
+ " : Determine the temperature the simulation will run at. 2.5K is the \
+critical point where neither spin up nor spin down are prefered (small patchs \
+of convergence appear periodically). At temperatures lower than 2.5K the \
+system will randomly converge to either spin up or spin down (the lower the \
+temperature the faster the convergence). At temperatures higher than 2.5 \
+noise will increase, meaning there will be fewer and fewer patches of \
+convergence.\n+ ",
+ StyleBox["Neighbors",
+  FontWeight->"Bold"],
+ " : Select the number of neighbors a grid cell interacts with. In other \
+words the number of neighboring cells which contribute to the local potential \
+can be either 4 or 8. Essentially this will result in faster convergence and \
+smoother edges delineating spin up from spin down.\n+ ",
+ StyleBox["Frames/Iterations",
+  FontWeight->"Bold"],
+ " : Choose how many frames will be animated and how many iterations are \
+represented by each frame. The time required to similate is proportional the \
+number of frames times the number of iterations. For large grid sizes \
+Iterations should be increased proportionally to the area of the grid to see \
+similar changes from frame to frame.\n\ndefault settings should be fine to \
+see the changes with temperature and neighbors, however for larger grids and \
+large numbers of frames it aborts opperations with eight neighbors for some \
+reason (probably because there\[CloseCurlyQuote]s too many iterations)."
+}], "Text",
+ CellChangeTimes->{{3.642555910752256*^9, 3.642555956838997*^9}, {
+   3.642556456875211*^9, 3.642556541632691*^9}, {3.642556592248612*^9, 
+   3.6425568324666643`*^9}, {3.6425590288234797`*^9, 3.642559033106295*^9}, 
+   3.6425602023099537`*^9, {3.64256051986591*^9, 3.642560521862803*^9}, {
+   3.64256062954839*^9, 3.642560629894795*^9}, {3.642560946198332*^9, 
+   3.642561020050734*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Simulate", "[", 
+  RowBox[{"TableInit", "[", 
+   RowBox[{"20", ",", "15"}], "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.6425529823544493`*^9, 3.642553002529077*^9}, {
+  3.642553085549159*^9, 3.642553090798729*^9}, {3.642553644255365*^9, 
+  3.642553648713222*^9}, {3.6425537842684507`*^9, 3.642553785957711*^9}, {
+  3.6425540624296217`*^9, 3.64255406366628*^9}, {3.642554123034111*^9, 
+  3.6425541321172256`*^9}, {3.6425542500475883`*^9, 3.642554250273962*^9}, {
+  3.642554479779155*^9, 3.642554482572908*^9}, {3.642554709484881*^9, 
+  3.64255471124697*^9}, {3.6425547717879133`*^9, 3.6425547731205072`*^9}, {
+  3.642554816932372*^9, 3.642554823011643*^9}, {3.6425548573392353`*^9, 
+  3.642554858955223*^9}, {3.642555041347962*^9, 3.64255504435885*^9}, {
+  3.6425593476860027`*^9, 3.642559348610474*^9}, {3.6425602053668327`*^9, 
+  3.642560206323862*^9}, {3.6425604746962547`*^9, 3.642560478529093*^9}, {
+  3.642560675487986*^9, 3.642560688145945*^9}}],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`f$$ = 200, $CellContext`i$$ = 
+    75, $CellContext`n$$ = 8, $CellContext`t$$ = 2.5, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{{
+       Hold[$CellContext`t$$], 2.5, "Temp (2.5 = Equilibrium)"}, 0.01, 5, 
+      0.01}, {{
+       Hold[$CellContext`n$$], 4, "Number of Neighbors"}, 4, 8, 4}, {{
+       Hold[$CellContext`f$$], 200, "Number of Frames"}, 1, 400, 5}, {{
+       Hold[$CellContext`i$$], 75, "Iterations per Frame"}, 1, 500, 5}}, 
+    Typeset`size$$ = {405., {192., 197.}}, Typeset`update$$ = 0, 
+    Typeset`initDone$$, Typeset`skipInitDone$$ = 
+    True, $CellContext`t$225466$$ = 0, $CellContext`n$225467$$ = 
+    0, $CellContext`f$225468$$ = 0, $CellContext`i$225469$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, 
+      "Variables" :> {$CellContext`f$$ = 200, $CellContext`i$$ = 
+        75, $CellContext`n$$ = 4, $CellContext`t$$ = 2.5}, 
+      "ControllerVariables" :> {
+        Hold[$CellContext`t$$, $CellContext`t$225466$$, 0], 
+        Hold[$CellContext`n$$, $CellContext`n$225467$$, 0], 
+        Hold[$CellContext`f$$, $CellContext`f$225468$$, 0], 
+        Hold[$CellContext`i$$, $CellContext`i$225469$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, "Body" :> 
+      With[{$CellContext`Frames$ = $CellContext`MakeFrames[CompressedData["
+1:eJydk8sNgDAMQ1sW4MICrMQIDAD7nyDHyopfCpWiKm1i2fns531cS2ttDdvC
+etgTZ7x78j7+jb77UyzFzfIpR7H1UL6LrXRUNaDb6dWYLE8xSO/MG/XT1YP4
+uXjyv/ByMYpNNaBaZv2pZpl0Vnpn+/pnv8jPeGZ8nB7iXM0B7aDjMqPpBWi4
+ZCU=
+           
+           "], $CellContext`t$$, $CellContext`n$$, $CellContext`f$$, \
+$CellContext`i$$]}, 
+        Manipulate[
+         ArrayPlot[
+          Part[$CellContext`Frames$, $CellContext`i$$], 
+          ColorRules -> {1 -> White, -1 -> Black}], {{$CellContext`i$$, 1, 
+           "Time"}, 1, $CellContext`f$$, 1, AnimationRate -> 10, Appearance -> 
+          "Open"}]], 
+      "Specifications" :> {{{$CellContext`t$$, 2.5, 
+          "Temp (2.5 = Equilibrium)"}, 0.01, 5, 0.01, Appearance -> 
+         "Labeled"}, {{$CellContext`n$$, 4, "Number of Neighbors"}, 4, 8, 4, 
+         Appearance -> 
+         "Labeled"}, {{$CellContext`f$$, 200, "Number of Frames"}, 1, 400, 5, 
+         Appearance -> 
+         "Labeled"}, {{$CellContext`i$$, 75, "Iterations per Frame"}, 1, 500, 
+         5, Appearance -> "Labeled"}}, "Options" :> {}, 
+      "DefaultOptions" :> {}],
+     ImageSizeCache->{450., {292., 297.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{
+  3.642553003272235*^9, 3.642553050606694*^9, {3.642553091443604*^9, 
+   3.6425531150587482`*^9}, {3.642553230283134*^9, 3.642553236574769*^9}, {
+   3.6425536451048594`*^9, 3.642553649041259*^9}, 3.642553719877377*^9, 
+   3.642553789809391*^9, 3.642553825058098*^9, 3.642553877833754*^9, 
+   3.642553924467471*^9, 3.642553971065978*^9, 3.64255404119909*^9, {
+   3.642554125846057*^9, 3.642554132531168*^9}, 3.642554185069332*^9, {
+   3.642554223951499*^9, 3.6425542508303747`*^9}, 3.642554388252775*^9, {
+   3.642554476780931*^9, 3.642554483224516*^9}, 3.6425545510456247`*^9, {
+   3.6425545950282907`*^9, 3.6425545964806757`*^9}, {3.642554759439612*^9, 
+   3.642554779355794*^9}, {3.642554823580649*^9, 3.642554893839673*^9}, 
+   3.642554932457003*^9, 3.642554973964369*^9, 3.6425550495372458`*^9, {
+   3.642555085913843*^9, 3.6425551264101543`*^9}, 3.642555198729104*^9, 
+   3.642555403816383*^9, {3.642555472467478*^9, 3.642555487143775*^9}, 
+   3.642555576607215*^9, 3.642555613281478*^9, 3.642555658899519*^9, 
+   3.6425556927172203`*^9, {3.642555739634123*^9, 3.64255575549652*^9}, {
+   3.642556556248934*^9, 3.6425565780987597`*^9}, {3.642560527398067*^9, 
+   3.642560538126101*^9}, 3.642560600658237*^9, 3.642560650745668*^9, 
+   3.642560689459371*^9}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{793, 771},
+WindowMargins->{{4, Automatic}, {Automatic, 4}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 4, \
+2014)",
+StyleDefinitions->FrontEnd`FileName[{"Report"}, "StandardReport.nb", 
+  CharacterEncoding -> "UTF-8"]
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 74, 1, 90, "Title"],
+Cell[CellGroupData[{
+Cell[679, 27, 107, 1, 62, "Subchapter"],
+Cell[789, 30, 2191, 32, 372, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3017, 67, 98, 1, 62, "Subchapter"],
+Cell[3118, 70, 375, 7, 68, "Text"],
+Cell[3496, 79, 324, 8, 68, "Text"],
+Cell[3823, 89, 4166, 115, 344, "Input"],
+Cell[7992, 206, 781, 12, 125, "Text"],
+Cell[8776, 220, 480, 9, 87, "Text"],
+Cell[9259, 231, 2785, 80, 242, "Input"],
+Cell[12047, 313, 822, 15, 144, "Text"],
+Cell[12872, 330, 5190, 93, 174, "Input"],
+Cell[18065, 425, 321, 6, 30, "Text"],
+Cell[18389, 433, 288, 6, 49, "Text"],
+Cell[18680, 441, 2907, 71, 174, "Input"],
+Cell[21590, 514, 300, 6, 30, "Text"],
+Cell[21893, 522, 546, 15, 37, "Input"],
+Cell[22442, 539, 2061, 34, 372, "Text"],
+Cell[CellGroupData[{
+Cell[24528, 577, 977, 15, 37, "Input"],
+Cell[25508, 594, 4515, 83, 615, "Output"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
