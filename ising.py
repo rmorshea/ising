@@ -37,10 +37,7 @@ def Es2Cv(T,U,U2):
         list of average potentials at each temp
     U2 : list
         list of averages of the squared potentials at each temp"""
-    Cv = list()
-    for i in range(len(T)):
-        Cv.append(float(U2[i]-U[i]**2)/T[i]**2)
-    return Cv
+    return [float(U2[i]-U[i]**2)/T[i]**2 for i in range(len(T))]
 
 class Lattice(BlockGrid):
 
@@ -70,9 +67,9 @@ class Lattice(BlockGrid):
         self.dist = dist
         for unit in self:
             self._unit_init(unit, dist, nghbrs)
-        self.rgbs= list()
-        self.U = list()
-        self.S = list()
+        self.rgbs = []
+        self.U = []
+        self.S = []
         if isinstance(T, (list,int,float)):
             self.T = T
         else:
@@ -107,11 +104,8 @@ class Lattice(BlockGrid):
             the number of flips performed
         index : int
             index of the temperature in self.T (if it's a list)"""
-        for its in range(iterations):
-            if isinstance(self.T,list):
-                temp = self.T[index]
-            else:
-                temp = self.T
+        for _ in range(iterations):
+            temp = self.T[index] if isinstance(self.T,list) else self.T
             shape = self.shape
             i=rand.randrange(0,shape[0])
             j=rand.randrange(0,shape[1])
@@ -125,8 +119,8 @@ class Lattice(BlockGrid):
             elif rand.random()<np.exp(-U_diff/temp):
                 unit.flip()
 
-        spins = list()
-        potentials = list()
+        spins = []
+        potentials = []
         for i in range(shape[0]):
             for j in range(shape[1]):
                 u = self[i,j]
@@ -144,9 +138,7 @@ class Lattice(BlockGrid):
         ishape=self.shape[0]
         jshape=self.shape[1]
         for i in range(ishape):
-            col=[]
-            for j in range(jshape):
-                col.append(self[j,i].rgb)
+            col = [self[j,i].rgb for j in range(jshape)]
             rgb.append(col)
         rgb=np.array(rgb)
         return rgb
@@ -225,8 +217,8 @@ class Lattice(BlockGrid):
 
     def get_potentials(self):
         """return average energy squared energy lists after animation"""
-        u_avg = list()
-        u_sqrd_avg = list()
+        u_avg = []
+        u_sqrd_avg = []
         if len(self.rgbs)==0:
             raise ValueError('no lattice states: initialize with `self.animate(display=False)`')
         for iteration in self.U:
@@ -236,7 +228,7 @@ class Lattice(BlockGrid):
 
     def analyze(self):
         """return avg magnitization, avg energy, and heat capacity lists"""
-        s_avg = list()
+        s_avg = []
         for iteration in self.S:
             s_avg.append(np.mean(iteration))
         u_avg, u_sqrd_avg = self.get_potentials()
@@ -263,19 +255,19 @@ class Unit(Block):
         lattice = self.lattice
         limits = lattice.shape
         nghbrs = self.nghbrs
-        neighbors = list()
-        for n in range(0, nghbrs):
+        neighbors = []
+        for n in range(nghbrs):
             new_i = i+int(round(np.cos(2*n*np.pi/nghbrs),0))
             new_j = j+int(round(np.sin(2*n*np.pi/nghbrs),0))
-            if new_i!=limits[0] and new_j!=limits[1]:
-                unit = lattice[new_i,new_j]
-            else:
+            if new_i == limits[0] or new_j == limits[1]:
                 if i==limits[0]:
                     unit = lattice[0,new_j]
                 elif j==limits[1]:
                     unit = lattice[new_i,0]
                 else:
                     unit = lattice[0,0]
+            else:
+                unit = lattice[new_i,new_j]
             neighbors.append(unit)
         return neighbors
         
